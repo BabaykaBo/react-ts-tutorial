@@ -18,13 +18,34 @@ module.exports = {
         test: /\.css$/,
         use: [
           MiniCssExtractPlugin.loader,
-          { loader: "css-loader", options: { 
-            modules: {
-              namedExport: false,
-              exportLocalsConvention: 'as-is',
-            }
-          } },
+          {
+            loader: "css-loader",
+            options: {
+              modules: {
+                namedExport: false,
+                exportLocalsConvention: "as-is",
+              },
+            },
+          },
         ],
+      },
+      {
+        test: /\.svg$/,
+        loader: "@svgr/webpack",
+        options: {
+          svgoConfig: {
+            plugins: [
+              {
+                name: "preset-default",
+                params: {
+                  overrides: {
+                    removeViewBox: false,
+                  },
+                },
+              },
+            ],
+          },
+        },
       },
     ],
   },
