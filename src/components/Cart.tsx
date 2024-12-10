@@ -21,7 +21,9 @@ class Cart extends React.Component<Props, State> {
     return (
       <AppStateContext.Consumer>
         {(state) => {
-          let pizzaCount = state.cart.items.length;
+          const pizzaCount = state.cart.items.reduce<number>((acc, item) => {
+            return acc + item.quantity;
+          }, 0);
           return (
             <div className={CartCSS.cartContainer}>
               <button
