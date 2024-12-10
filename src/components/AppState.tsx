@@ -2,6 +2,7 @@ import React, {
   createContext,
   PropsWithChildren,
   useContext,
+  useEffect,
   useReducer,
 } from "react";
 
@@ -18,18 +19,6 @@ interface AppStateValue {
   };
 }
 
-const defaultStateValue: AppStateValue = {
-  cart: {
-    items: [],
-  },
-};
-
-type DispatchType = React.Dispatch<AddToCartAction> | undefined;
-
-export const AppStateContext = createContext(defaultStateValue);
-
-export const AppDispatchContext = createContext<DispatchType>(undefined);
-
 interface Action<T> {
   type: T;
 }
@@ -40,50 +29,94 @@ interface AddToCartAction extends Action<"ADD_TO_CART"> {
   };
 }
 
-const reducer = (state: AppStateValue, action: AddToCartAction) => {
-  if (action.type == "ADD_TO_CART") {
-    const itemToAdd = action.payload.item;
-    const itemExists = state.cart.items.find(
-      (item) => item.id === itemToAdd.id
-    );
-    return {
-      ...state,
-      cart: {
-        ...state.cart,
-        items: itemExists
-          ? state.cart.items.map((item) => {
-              if (item.id === itemToAdd.id) {
-                return { ...item, quantity: item.quantity + 1 };
-              }
+interface InitializeCartAction extends Action<"INITIALIZE_CART"> {
+  payload: {
+    cart: AppStateValue["cart"];
+  };
+}
 
-              return item;
-            })
-          : [
-              ...state.cart.items,
-              {
-                ...itemToAdd,
-                quantity: 1,
-              },
-            ],
-      },
-    };
+type DispatchType = React.Dispatch<AddToCartAction> | undefined;
+
+type CartAction = AddToCartAction | InitializeCartAction;
+
+const defaultStateValue: AppStateValue = {
+  cart: {
+    items: [],
+  },
+};
+
+export const AppStateContext = createContext(defaultStateValue);
+
+export const AppDispatchContext = createContext<DispatchType>(undefined);
+
+const reducer = (state: AppStateValue, action: CartAction) => {
+  switch (action.type) {
+    case "ADD_TO_CART":
+      const itemToAdd = action.payload.item;
+
+      const itemExists = state.cart.items.find(
+        (item) => item.id === itemToAdd.id
+      );
+
+      return {
+        ...state,
+        cart: {
+          ...state.cart,
+          items: itemExists
+            ? state.cart.items.map((item) => {
+                if (item.id === itemToAdd.id) {
+                  return { ...item, quantity: item.quantity + 1 };
+                }
+
+                return item;
+              })
+            : [
+                ...state.cart.items,
+                {
+                  ...itemToAdd,
+                  quantity: 1,
+                },
+              ],
+        },
+      };
+
+    case "INITIALIZE_CART":
+      return { ...state, cart: action.payload.cart };
+    default:
+      return state;
   }
-
-  return state;
 };
 
 export const useStateDispatch = () => {
   const dispatch = useContext(AppDispatchContext);
+
   if (!dispatch) {
     throw Error(
       "useStateDispatch was called outside of the AppDispatchContext provider!"
     );
   }
+
   return dispatch;
 };
 
 const AppStateProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, defaultStateValue);
+
+  useEffect(() => {
+    const cart = window.localStorage.getItem("cart");
+
+    if (cart) {
+      dispatch({
+        type: "INITIALIZE_CART",
+        payload: { cart: JSON.parse(cart) },
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("cart", JSON.stringify(state.cart));
+  }, [state.cart]);
+
   return (
     <AppStateContext.Provider value={state}>
       <AppDispatchContext.Provider value={dispatch}>

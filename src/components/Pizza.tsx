@@ -15,6 +15,7 @@ interface Props {
 
 const Pizza: React.FC<Props> = ({ pizza }) => {
   const dispatch = useStateDispatch();
+
   const handleAddToCartClick = () => {
     dispatch({
       type: "ADD_TO_CART",
@@ -23,6 +24,7 @@ const Pizza: React.FC<Props> = ({ pizza }) => {
       },
     });
   };
+
   return (
     <li className={PizzaCSS.container}>
       <h2>{pizza.name}</h2>

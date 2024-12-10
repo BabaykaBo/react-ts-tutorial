@@ -35,7 +35,7 @@ class Cart extends React.Component<Props, State> {
               >
                 <FiShoppingCart />
                 <span>
-                  {pizzaCount} pizza{pizzaCount > 1 ? "s" : ""}
+                  {pizzaCount} pizza{Math.abs(pizzaCount) !== 1 ? "s" : ""}
                 </span>
               </button>
               <div
