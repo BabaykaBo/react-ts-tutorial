@@ -1,11 +1,14 @@
 import React from "react";
 import { Pizza } from "../types";
 import SpecialOfferCSS from "./SpecialOffer.module.css";
-import { AddToCartProps, WithAddToCartProps } from "./AddToCart";
+
+import { WithAddToCartProps } from "./AddToCart";
+
 
 interface Props {
   pizza: Pizza;
 }
+
 
 const SpecialOffer: React.FC<Props> = ({ pizza }) => {
   return (
